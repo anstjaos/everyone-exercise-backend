@@ -1,4 +1,4 @@
-package sm.project.everyoneexercisebackend;
+package sm.project.everyoneexercise.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
