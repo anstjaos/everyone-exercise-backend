@@ -1,5 +1,6 @@
 package sm.project.everyoneexercise.backend.user.adapter.out.persistence;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
@@ -13,6 +14,7 @@ class UserPersistenceAdapter implements RegisterUserPort {
     private final UserMapper userMapper;
 
     @Override
+    @Transactional
     public User registerUser(RegisterUserCommand registerUserCommand) {
         var userEntity = userMapper.mapCommandToEntity(registerUserCommand);
         var userJpaEntity =  userRepository.save(userEntity);
