@@ -12,12 +12,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+class UserRegisterServiceTest {
     @Mock
     private RegisterUserPort registerUserPort;
 
     @InjectMocks
-    private UserService userService;
+    private UserRegisterService userRegisterService;
 
     @Test
     void registerUser_success() {
@@ -26,7 +26,7 @@ class UserServiceTest {
 
         when(registerUserPort.registerUser(registerUserCommand)).thenReturn(user);
 
-        var resultUser = userService.registerUser(registerUserCommand);
+        var resultUser = userRegisterService.registerUser(registerUserCommand);
 
         assertThat(resultUser.userId()).isEqualTo(registerUserCommand.userId());
         assertThat(resultUser.nickname()).isEqualTo(registerUserCommand.nickname());
