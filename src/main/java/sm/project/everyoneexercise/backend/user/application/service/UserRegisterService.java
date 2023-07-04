@@ -9,7 +9,7 @@ import sm.project.everyoneexercise.backend.user.domain.User;
 
 @AllArgsConstructor
 @Service
-class UserService implements RegisterUserUseCase {
+class UserRegisterService implements RegisterUserUseCase {
     private final RegisterUserPort registerUserPort;
 
     @Override

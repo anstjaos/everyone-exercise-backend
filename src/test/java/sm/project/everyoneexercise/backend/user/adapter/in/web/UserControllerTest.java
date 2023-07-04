@@ -11,11 +11,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import sm.project.everyoneexercise.backend.user.UserUtil;
 import sm.project.everyoneexercise.backend.user.adapter.in.RegisterUserRequest;
+import sm.project.everyoneexercise.backend.user.application.port.in.ReadUserUseCase;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserUseCase;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,6 +29,9 @@ class UserControllerTest {
 
     @MockBean
     private RegisterUserUseCase registerUserUseCase;
+
+    @MockBean
+    private ReadUserUseCase readUserUseCase;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -73,5 +78,17 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.header.isSuccessful").value(true))
                 .andExpect(jsonPath("$.header.statusCode").value(200));
+    }
+
+    @Test
+    void readUser_success() throws Exception {
+        var user = UserUtil.createUser();
+
+        when(readUserUseCase.readUser(user.userId())).thenReturn(user);
+
+        mockMvc.perform(get("/users/" + user.userId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.header.isSuccessful").value(true))
+                .andExpect(jsonPath("$.body.userId").value(user.userId()));
     }
 }
