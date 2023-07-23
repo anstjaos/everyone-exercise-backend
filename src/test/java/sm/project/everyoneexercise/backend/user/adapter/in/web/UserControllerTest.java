@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import sm.project.everyoneexercise.backend.common.ResponseCode;
 import sm.project.everyoneexercise.backend.user.UserUtil;
 import sm.project.everyoneexercise.backend.user.adapter.in.RegisterUserRequest;
 import sm.project.everyoneexercise.backend.user.application.port.in.ReadUserUseCase;
@@ -51,10 +52,11 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(registerUserRequest))
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.body.statusCode").value(400))
-                .andExpect(jsonPath("$.body.errorMessage", containsString("User id is mandatory.")))
-                .andExpect(jsonPath("$.body.errorMessage", containsString("Nickname is mandatory.")))
-                .andExpect(jsonPath("$.body.errorMessage", containsString("Password is mandatory.")));
+                .andExpect(jsonPath("$.header.isSuccessful").value(false))
+                .andExpect(jsonPath("$.header.statusCode").value(ResponseCode.VALIDATE_FAILED.getStatusCode()))
+                .andExpect(jsonPath("$.header.message", containsString("User id is mandatory.")))
+                .andExpect(jsonPath("$.header.message", containsString("Nickname is mandatory.")))
+                .andExpect(jsonPath("$.header.message", containsString("Password is mandatory.")));
     }
 
     @Test
