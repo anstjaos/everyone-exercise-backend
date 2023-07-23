@@ -4,7 +4,6 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import sm.project.everyoneexercise.backend.common.ErrorResponse;
 import sm.project.everyoneexercise.backend.common.Response;
 import sm.project.everyoneexercise.backend.common.ResponseCode;
 import sm.project.everyoneexercise.backend.user.adapter.in.RegisterUserRequest;
@@ -33,7 +32,7 @@ class UserController {
             var errors = bindingResult.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
                     .collect(Collectors.joining(","));
-            return Response.success(ErrorResponse.of(ResponseCode.VALIDATE_FAILED, errors));
+            return Response.fail(ResponseCode.VALIDATE_FAILED.getStatusCode(), errors);
         }
         registerUserUseCase.registerUser(RegisterUserCommand.mapRequestToCommand(registerUserRequest));
         return Response.success(true);
