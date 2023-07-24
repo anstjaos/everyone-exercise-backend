@@ -5,7 +5,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import sm.project.everyoneexercise.backend.common.Response;
-import sm.project.everyoneexercise.backend.common.ResponseCode;
+import sm.project.everyoneexercise.backend.exception.RegisterUserValidationException;
 import sm.project.everyoneexercise.backend.user.adapter.in.RegisterUserRequest;
 import sm.project.everyoneexercise.backend.user.application.port.in.ReadUserUseCase;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
@@ -26,13 +26,14 @@ class UserController {
         this.readUserUseCase = readUserUseCase;
     }
 
-    @PostMapping()
-    Response<?> registerUser(@Validated @RequestBody RegisterUserRequest registerUserRequest, BindingResult bindingResult) {
+    @PostMapping
+    Response<Boolean> registerUser(@Validated @RequestBody RegisterUserRequest registerUserRequest,
+                             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             var errors = bindingResult.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
                     .collect(Collectors.joining(","));
-            return Response.fail(ResponseCode.VALIDATE_FAILED.getStatusCode(), errors);
+            throw new RegisterUserValidationException(errors);
         }
         registerUserUseCase.registerUser(RegisterUserCommand.mapRequestToCommand(registerUserRequest));
         return Response.success(true);
