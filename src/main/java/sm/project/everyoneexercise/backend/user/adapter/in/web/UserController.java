@@ -7,23 +7,25 @@ import org.springframework.web.bind.annotation.*;
 import sm.project.everyoneexercise.backend.common.Response;
 import sm.project.everyoneexercise.backend.exception.RegisterUserValidationException;
 import sm.project.everyoneexercise.backend.user.adapter.in.RegisterUserRequest;
-import sm.project.everyoneexercise.backend.user.application.port.in.ReadUserUseCase;
-import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
-import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserUseCase;
+import sm.project.everyoneexercise.backend.user.adapter.in.UpdateUserRequest;
+import sm.project.everyoneexercise.backend.user.application.port.in.*;
 import sm.project.everyoneexercise.backend.user.domain.User;
 
 import java.util.stream.Collectors;
 
-@RestController()
+@RestController
 @RequestMapping(path = "users")
 class UserController {
     private final RegisterUserUseCase registerUserUseCase;
     private final ReadUserUseCase readUserUseCase;
+    private final UpdateUserUseCase updateUserUseCase;
 
     public UserController(RegisterUserUseCase registerUserUseCase,
-                          ReadUserUseCase readUserUseCase) {
+                          ReadUserUseCase readUserUseCase,
+                          UpdateUserUseCase updateUserUseCase) {
         this.registerUserUseCase = registerUserUseCase;
         this.readUserUseCase = readUserUseCase;
+        this.updateUserUseCase = updateUserUseCase;
     }
 
     @PostMapping
@@ -42,6 +44,12 @@ class UserController {
     @GetMapping(path = "/{userId}")
     Response<User> readUser(@PathVariable String userId) {
         var user = readUserUseCase.readUser(userId);
+        return Response.success(user);
+    }
+
+    @PutMapping(path = "/{userId}")
+    Response<User> updateUser(@PathVariable String userId, @RequestBody UpdateUserRequest updateUserRequest) {
+        var user = updateUserUseCase.updateUser(userId, UpdateUserCommand.mapRequestToCommand(updateUserRequest));
         return Response.success(user);
     }
 }

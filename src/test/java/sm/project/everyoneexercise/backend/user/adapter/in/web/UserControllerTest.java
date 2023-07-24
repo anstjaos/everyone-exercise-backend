@@ -15,6 +15,7 @@ import sm.project.everyoneexercise.backend.user.adapter.in.RegisterUserRequest;
 import sm.project.everyoneexercise.backend.user.application.port.in.ReadUserUseCase;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserUseCase;
+import sm.project.everyoneexercise.backend.user.application.port.in.UpdateUserUseCase;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
@@ -33,6 +34,9 @@ class UserControllerTest {
 
     @MockBean
     private ReadUserUseCase readUserUseCase;
+
+    @MockBean
+    private UpdateUserUseCase updateUserUseCase;
 
     @Autowired
     private ObjectMapper objectMapper;
