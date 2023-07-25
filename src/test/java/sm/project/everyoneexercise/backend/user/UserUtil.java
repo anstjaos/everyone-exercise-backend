@@ -2,6 +2,7 @@ package sm.project.everyoneexercise.backend.user;
 
 import sm.project.everyoneexercise.backend.user.adapter.out.persistence.UserJpaEntity;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
+import sm.project.everyoneexercise.backend.user.application.port.in.UpdateUserCommand;
 import sm.project.everyoneexercise.backend.user.domain.User;
 
 public class UserUtil {
@@ -45,6 +46,15 @@ public class UserUtil {
                 .build();
     }
 
+    public static User createUser(UpdateUserCommand updateUserCommand) {
+        return User.builder()
+                .nickname(updateUserCommand.nickname())
+                .password(updateUserCommand.password())
+                .phoneNumber(updateUserCommand.phoneNumber())
+                .autoLogin(updateUserCommand.autoLogin())
+                .build();
+    }
+
     public static UserJpaEntity createUserJpaEntity(RegisterUserCommand registerUserCommand) {
         return new UserJpaEntity(registerUserCommand.userId(),
                 registerUserCommand.nickname(),
@@ -55,5 +65,14 @@ public class UserUtil {
 
     public static UserJpaEntity createUserJpaEntity() {
         return new UserJpaEntity("userId", "nickname", "password", "phoneNumber", false);
+    }
+
+    public static UpdateUserCommand createUpdateUserCommand() {
+        return UpdateUserCommand.builder()
+                .nickname("change-nickname")
+                .password("change-password")
+                .phoneNumber("change-phoneNumber")
+                .autoLogin(false)
+                .build();
     }
 }

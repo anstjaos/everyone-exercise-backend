@@ -4,7 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum ResponseCode {
-    VALIDATE_FAILED(400, "Validate failed.");
+    VALIDATE_FAILED(400, "Validate failed."),
+    USER_NOT_FOUND(400, "User is not found");
 
     final Integer statusCode;
     final String message;
