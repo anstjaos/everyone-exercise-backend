@@ -10,16 +10,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import sm.project.everyoneexercise.backend.common.ResponseCode;
+import sm.project.everyoneexercise.backend.exception.UserNotFoundException;
 import sm.project.everyoneexercise.backend.user.UserUtil;
 import sm.project.everyoneexercise.backend.user.adapter.in.RegisterUserRequest;
-import sm.project.everyoneexercise.backend.user.application.port.in.ReadUserUseCase;
-import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
-import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserUseCase;
+import sm.project.everyoneexercise.backend.user.adapter.in.UpdateUserRequest;
+import sm.project.everyoneexercise.backend.user.application.port.in.*;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,6 +32,9 @@ class UserControllerTest {
 
     @MockBean
     private ReadUserUseCase readUserUseCase;
+
+    @MockBean
+    private UpdateUserUseCase updateUserUseCase;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -92,5 +94,52 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.header.isSuccessful").value(true))
                 .andExpect(jsonPath("$.body.userId").value(user.userId()));
+    }
+
+    @Test
+    void updateUser_success() throws Exception {
+        var userId = "user_id";
+        var updateUserRequest = UpdateUserRequest.builder()
+                .nickname("change_nickname")
+                .password("change_password")
+                .phoneNumber("change_phoneNumber")
+                .autoLogin(false)
+                .build();
+        var updateUserCommand = UpdateUserCommand.mapRequestToCommand(updateUserRequest);
+        var user = UserUtil.createUser(updateUserCommand);
+
+        when(updateUserUseCase.updateUser(userId, updateUserCommand)).thenReturn(user);
+
+        mockMvc.perform(put("/users/" + userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateUserRequest))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.header.isSuccessful").value(true))
+                .andExpect(jsonPath("$.body.userId").value(user.userId()))
+                .andExpect(jsonPath("$.body.nickname").value(updateUserRequest.nickname()));
+    }
+
+    @Test
+    void updateUser_failed_userNotFound() throws Exception {
+        var userId = "user_id";
+        var updateUserRequest = UpdateUserRequest.builder()
+                .nickname("change_nickname")
+                .password("change_password")
+                .phoneNumber("change_phoneNumber")
+                .autoLogin(false)
+                .build();
+        var updateUserCommand = UpdateUserCommand.mapRequestToCommand(updateUserRequest);
+
+        when(updateUserUseCase.updateUser(userId, updateUserCommand)).thenThrow(new UserNotFoundException("User is not found. User id = " + userId));
+
+        mockMvc.perform(put("/users/" + userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateUserRequest))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.header.isSuccessful").value(false))
+                .andExpect(jsonPath("$.header.statusCode").value(ResponseCode.USER_NOT_FOUND.getStatusCode()))
+                .andExpect(jsonPath("$.header.message", containsString("User is not found. User id = " + userId)));
     }
 }

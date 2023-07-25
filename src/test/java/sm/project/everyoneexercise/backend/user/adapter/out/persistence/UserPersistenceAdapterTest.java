@@ -64,11 +64,38 @@ class UserPersistenceAdapterTest {
     }
 
     @Test
-    void readUserByUserId_failure_notExists() {
+    void readUserByUserId_failure_userNotExists() {
         var userJpaEntity = UserUtil.createUserJpaEntity();
 
         when(userRepository.findById(userJpaEntity.getUserId())).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userPersistenceAdapter.readUserByUserId(userJpaEntity.getUserId()));
+    }
+
+    @Test
+    void updateUser_success() {
+        var updateUserCommand = UserUtil.createUpdateUserCommand();
+        var userJpaEntity = UserUtil.createUserJpaEntity();
+        var user = UserUtil.createUser(updateUserCommand);
+
+        when(userRepository.findById(userJpaEntity.getUserId())).thenReturn(Optional.of(userJpaEntity));
+        when(userMapper.mapEntityToDomainEntity(userJpaEntity)).thenReturn(user);
+
+        var updateUser = userPersistenceAdapter.updateUser(userJpaEntity.getUserId(), updateUserCommand);
+
+        assertThat(updateUser.nickname()).isEqualTo(updateUserCommand.nickname());
+        assertThat(updateUser.password()).isEqualTo(updateUserCommand.password());
+        assertThat(updateUser.phoneNumber()).isEqualTo(updateUserCommand.phoneNumber());
+        assertThat(updateUser.autoLogin()).isEqualTo(updateUserCommand.autoLogin());
+    }
+
+    @Test
+    void updateUser_failed_userNotExists() {
+        var userId = "user_id";
+        var updateUserCommand = UserUtil.createUpdateUserCommand();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userPersistenceAdapter.updateUser(userId, updateUserCommand));
     }
 }
