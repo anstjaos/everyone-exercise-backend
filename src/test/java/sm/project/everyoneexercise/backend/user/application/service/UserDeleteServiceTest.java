@@ -1,5 +1,6 @@
 package sm.project.everyoneexercise.backend.user.application.service;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -14,4 +15,10 @@ class UserDeleteServiceTest {
     @InjectMocks
     private UserDeleteService userDeleteService;
 
+    @Test
+    void deleteUser_success() {
+        var userId = "user_id";
+
+        userDeleteService.deleteUser(userId);
+    }
 }
