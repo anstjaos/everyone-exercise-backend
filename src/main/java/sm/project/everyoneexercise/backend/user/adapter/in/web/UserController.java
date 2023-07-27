@@ -19,13 +19,16 @@ class UserController {
     private final RegisterUserUseCase registerUserUseCase;
     private final ReadUserUseCase readUserUseCase;
     private final UpdateUserUseCase updateUserUseCase;
+    private final DeleteUserUseCase deleteUserUseCase;
 
     public UserController(RegisterUserUseCase registerUserUseCase,
                           ReadUserUseCase readUserUseCase,
-                          UpdateUserUseCase updateUserUseCase) {
+                          UpdateUserUseCase updateUserUseCase,
+                          DeleteUserUseCase deleteUserUseCase) {
         this.registerUserUseCase = registerUserUseCase;
         this.readUserUseCase = readUserUseCase;
         this.updateUserUseCase = updateUserUseCase;
+        this.deleteUserUseCase = deleteUserUseCase;
     }
 
     @PostMapping
@@ -51,5 +54,11 @@ class UserController {
     Response<User> updateUser(@PathVariable String userId, @RequestBody UpdateUserRequest updateUserRequest) {
         var user = updateUserUseCase.updateUser(userId, UpdateUserCommand.mapRequestToCommand(updateUserRequest));
         return Response.success(user);
+    }
+
+    @DeleteMapping(path = "/{userId}")
+    Response<Boolean> deleteUser(@PathVariable String userId) {
+        deleteUserUseCase.deleteUser(userId);
+        return Response.success(true);
     }
 }
