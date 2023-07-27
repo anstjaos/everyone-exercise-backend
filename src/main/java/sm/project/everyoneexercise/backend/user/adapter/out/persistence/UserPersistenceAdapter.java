@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import sm.project.everyoneexercise.backend.exception.UserNotFoundException;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
 import sm.project.everyoneexercise.backend.user.application.port.in.UpdateUserCommand;
+import sm.project.everyoneexercise.backend.user.application.port.out.DeleteUserPort;
 import sm.project.everyoneexercise.backend.user.application.port.out.ReadUserPort;
 import sm.project.everyoneexercise.backend.user.application.port.out.RegisterUserPort;
 import sm.project.everyoneexercise.backend.user.application.port.out.UpdateUserPort;
@@ -13,7 +14,7 @@ import sm.project.everyoneexercise.backend.user.domain.User;
 
 @AllArgsConstructor
 @Component
-class UserPersistenceAdapter implements RegisterUserPort, ReadUserPort, UpdateUserPort {
+class UserPersistenceAdapter implements RegisterUserPort, ReadUserPort, UpdateUserPort, DeleteUserPort {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
@@ -42,5 +43,11 @@ class UserPersistenceAdapter implements RegisterUserPort, ReadUserPort, UpdateUs
         userJpaEntity.updateUser(updateUserCommand);
 
         return userMapper.mapEntityToDomainEntity(userJpaEntity);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(String userId) {
+        userRepository.deleteById(userId);
     }
 }

@@ -36,6 +36,9 @@ class UserControllerTest {
     @MockBean
     private UpdateUserUseCase updateUserUseCase;
 
+    @MockBean
+    private DeleteUserUseCase deleteUserUseCase;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -141,5 +144,15 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.header.isSuccessful").value(false))
                 .andExpect(jsonPath("$.header.statusCode").value(ResponseCode.USER_NOT_FOUND.getStatusCode()))
                 .andExpect(jsonPath("$.header.message", containsString("User is not found. User id = " + userId)));
+    }
+
+    @Test
+    void deleteUser_success() throws Exception {
+        var userId = "user_id";
+
+        mockMvc.perform(delete("/users/" + userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.header.isSuccessful").value(true))
+                .andExpect(jsonPath("$.body").value(true));
     }
 }
