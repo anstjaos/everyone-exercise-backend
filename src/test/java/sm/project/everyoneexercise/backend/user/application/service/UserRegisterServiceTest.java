@@ -5,10 +5,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import sm.project.everyoneexercise.backend.user.UserUtil;
 import sm.project.everyoneexercise.backend.user.application.port.out.RegisterUserPort;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,14 +25,16 @@ class UserRegisterServiceTest {
         var registerUserCommand = UserUtil.createRegisterUserCommand();
         var user = UserUtil.createUser(registerUserCommand);
 
-        when(registerUserPort.registerUser(registerUserCommand)).thenReturn(user);
+        when(registerUserPort.registerUser(registerUserCommand)).thenReturn(Mono.just(user));
 
-        var resultUser = userRegisterService.registerUser(registerUserCommand);
+        var registerUser = userRegisterService.registerUser(registerUserCommand);
 
-        assertThat(resultUser.userId()).isEqualTo(registerUserCommand.userId());
-        assertThat(resultUser.nickname()).isEqualTo(registerUserCommand.nickname());
-        assertThat(resultUser.password()).isEqualTo(registerUserCommand.password());
-        assertThat(resultUser.phoneNumber()).isEqualTo(registerUserCommand.phoneNumber());
-        assertThat(resultUser.autoLogin()).isEqualTo(registerUserCommand.autoLogin());
+        StepVerifier.create(registerUser)
+                .expectNextMatches(resultUser -> resultUser.userId().equals(registerUserCommand.userId())
+                        && resultUser.nickname().equals(registerUserCommand.nickname())
+                        && resultUser.password().equals(registerUserCommand.password())
+                        && resultUser.phoneNumber().equals(registerUserCommand.phoneNumber())
+                        && resultUser.autoLogin().equals(registerUserCommand.autoLogin()))
+                .verifyComplete();
     }
 }

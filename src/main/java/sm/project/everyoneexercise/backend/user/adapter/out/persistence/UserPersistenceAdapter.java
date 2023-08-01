@@ -3,7 +3,7 @@ package sm.project.everyoneexercise.backend.user.adapter.out.persistence;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import sm.project.everyoneexercise.backend.exception.UserNotFoundException;
+import reactor.core.publisher.Mono;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
 import sm.project.everyoneexercise.backend.user.application.port.in.UpdateUserCommand;
 import sm.project.everyoneexercise.backend.user.application.port.out.DeleteUserPort;
@@ -20,34 +20,37 @@ class UserPersistenceAdapter implements RegisterUserPort, ReadUserPort, UpdateUs
 
     @Override
     @Transactional
-    public User registerUser(RegisterUserCommand registerUserCommand) {
+    public Mono<User> registerUser(RegisterUserCommand registerUserCommand) {
         var userEntity = userMapper.mapCommandToEntity(registerUserCommand);
-        var userJpaEntity = userRepository.save(userEntity);
 
-        return userMapper.mapEntityToDomainEntity(userJpaEntity);
+        return userRepository.save(userEntity)
+                .map(userMapper::mapEntityToDomainEntity);
     }
 
     @Override
     public User readUserByUserId(String userId) {
-        var userJpaEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User is not exists. user id = " + userId));
-
-        return userMapper.mapEntityToDomainEntity(userJpaEntity);
+//        var userJpaEntity = userRepository.findById(userId)
+//                .orElseThrow(() -> new UserNotFoundException("User is not exists. user id = " + userId));
+//
+//        return userMapper.mapEntityToDomainEntity(userJpaEntity);
+        return null;
     }
 
     @Override
     @Transactional
     public User updateUser(String userId, UpdateUserCommand updateUserCommand) {
-        var userJpaEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User is not exists. user id = " + userId));
-        userJpaEntity.updateUser(updateUserCommand);
-
-        return userMapper.mapEntityToDomainEntity(userJpaEntity);
+//        var userJpaEntity = userRepository.findById(userId)
+//                .orElseThrow(() -> new UserNotFoundException("User is not exists. user id = " + userId));
+//        userJpaEntity.updateUser(updateUserCommand);
+//
+//        return userMapper.mapEntityToDomainEntity(userJpaEntity);
+        return null;
     }
 
     @Override
     @Transactional
     public void deleteUser(String userId) {
-        userRepository.deleteById(userId);
+//        userRepository.deleteById(userId);
+        return;
     }
 }
