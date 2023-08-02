@@ -5,10 +5,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 import sm.project.everyoneexercise.backend.user.UserUtil;
 import sm.project.everyoneexercise.backend.user.application.port.out.UpdateUserPort;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,13 +26,15 @@ class UserUpdateServiceTest {
         var updateUserCommand = UserUtil.createUpdateUserCommand();
         var user = UserUtil.createUser(updateUserCommand);
 
-        when(updateUserPort.updateUser(userId, updateUserCommand)).thenReturn(user);
+        when(updateUserPort.updateUser(userId, updateUserCommand)).thenReturn(Mono.just(user));
 
-        var updateUser = userUpdateService.updateUser(userId, updateUserCommand);
+        var updateUserResult = userUpdateService.updateUser(userId, updateUserCommand);
 
-        assertThat(updateUser.nickname()).isEqualTo(updateUserCommand.nickname());
-        assertThat(updateUser.password()).isEqualTo(updateUserCommand.password());
-        assertThat(updateUser.phoneNumber()).isEqualTo(updateUserCommand.phoneNumber());
-        assertThat(updateUser.autoLogin()).isEqualTo(updateUserCommand.autoLogin());
+        StepVerifier.create(updateUserResult)
+                .expectNextMatches(updateUser -> updateUser.nickname().equals(updateUserCommand.nickname())
+                        && updateUser.password().equals(updateUserCommand.password())
+                        && updateUser.phoneNumber().equals(updateUserCommand.phoneNumber())
+                        && updateUser.autoLogin().equals(updateUserCommand.autoLogin()))
+                .verifyComplete();
     }
 }

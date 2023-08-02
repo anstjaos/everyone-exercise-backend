@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import sm.project.everyoneexercise.backend.exception.UserNotFoundException;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
 import sm.project.everyoneexercise.backend.user.application.port.in.UpdateUserCommand;
 import sm.project.everyoneexercise.backend.user.application.port.out.DeleteUserPort;
@@ -38,13 +39,13 @@ class UserPersistenceAdapter implements RegisterUserPort, ReadUserPort, UpdateUs
 
     @Override
     @Transactional
-    public User updateUser(String userId, UpdateUserCommand updateUserCommand) {
-//        var userJpaEntity = userRepository.findById(userId)
-//                .orElseThrow(() -> new UserNotFoundException("User is not exists. user id = " + userId));
-//        userJpaEntity.updateUser(updateUserCommand);
-//
-//        return userMapper.mapEntityToDomainEntity(userJpaEntity);
-        return null;
+    public Mono<User> updateUser(String userId, UpdateUserCommand updateUserCommand) {
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new UserNotFoundException("User is not found. User id : " + userId))))
+                .flatMap(userJpaEntity -> {
+                    userJpaEntity.updateUser(updateUserCommand);
+                    return Mono.just(userMapper.mapEntityToDomainEntity(userJpaEntity));
+                });
     }
 
     @Override

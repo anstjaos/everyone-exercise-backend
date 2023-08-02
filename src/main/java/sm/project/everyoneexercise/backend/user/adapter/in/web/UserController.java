@@ -48,9 +48,11 @@ class UserController {
     }
 
     @PutMapping(path = "/{userId}")
-    Response<User> updateUser(@PathVariable String userId, @RequestBody UpdateUserRequest updateUserRequest) {
-        var user = updateUserUseCase.updateUser(userId, UpdateUserCommand.mapRequestToCommand(updateUserRequest));
-        return Response.success(user);
+    Mono<Response<User>> updateUser(@PathVariable String userId, @RequestBody Mono<UpdateUserRequest> updateUserRequest) {
+        return updateUserRequest
+                .map(UpdateUserCommand::mapRequestToCommand)
+                .flatMap(updateUserCommand -> updateUserUseCase.updateUser(userId, updateUserCommand))
+                .map(Response::success);
     }
 
     @DeleteMapping(path = "/{userId}")

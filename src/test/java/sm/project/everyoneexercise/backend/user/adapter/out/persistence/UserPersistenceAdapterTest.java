@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.annotation.DirtiesContext;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import sm.project.everyoneexercise.backend.exception.UserNotFoundException;
 import sm.project.everyoneexercise.backend.user.UserUtil;
 
 import static org.mockito.Mockito.when;
@@ -71,30 +72,34 @@ class UserPersistenceAdapterTest {
 //        assertThrows(UserNotFoundException.class, () -> userPersistenceAdapter.readUserByUserId(userJpaEntity.getUserId()));
 //    }
 //
-//    @Test
-//    void updateUser_success() {
-//        var updateUserCommand = UserUtil.createUpdateUserCommand();
-//        var userJpaEntity = UserUtil.createUserJpaEntity();
-//        var user = UserUtil.createUser(updateUserCommand);
-//
-//        when(userRepository.findById(userJpaEntity.getUserId())).thenReturn(Optional.of(userJpaEntity));
-//        when(userMapper.mapEntityToDomainEntity(userJpaEntity)).thenReturn(user);
-//
-//        var updateUser = userPersistenceAdapter.updateUser(userJpaEntity.getUserId(), updateUserCommand);
-//
-//        assertThat(updateUser.nickname()).isEqualTo(updateUserCommand.nickname());
-//        assertThat(updateUser.password()).isEqualTo(updateUserCommand.password());
-//        assertThat(updateUser.phoneNumber()).isEqualTo(updateUserCommand.phoneNumber());
-//        assertThat(updateUser.autoLogin()).isEqualTo(updateUserCommand.autoLogin());
-//    }
-//
-//    @Test
-//    void updateUser_failed_userNotExists() {
-//        var userId = "user_id";
-//        var updateUserCommand = UserUtil.createUpdateUserCommand();
-//
-//        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-//
-//        assertThrows(UserNotFoundException.class, () -> userPersistenceAdapter.updateUser(userId, updateUserCommand));
-//    }
+    @Test
+    void updateUser_success() {
+        var updateUserCommand = UserUtil.createUpdateUserCommand();
+        var userJpaEntity = UserUtil.createUserJpaEntity();
+        var user = UserUtil.createUser(updateUserCommand);
+
+        when(userRepository.findById(userJpaEntity.getUserId())).thenReturn(Mono.just(userJpaEntity));
+        when(userMapper.mapEntityToDomainEntity(userJpaEntity)).thenReturn(user);
+
+        var updateUserResult = userPersistenceAdapter.updateUser(userJpaEntity.getUserId(), updateUserCommand);
+
+        StepVerifier.create(updateUserResult)
+                .expectNextMatches(updateUser -> updateUser.nickname().equals(updateUserCommand.nickname())
+                        && updateUser.password().equals(updateUserCommand.password())
+                        && updateUser.phoneNumber().equals(updateUserCommand.phoneNumber())
+                        && updateUser.autoLogin().equals(updateUserCommand.autoLogin()))
+                .verifyComplete();
+    }
+
+    @Test
+    void updateUser_failed_userNotExists() {
+        var userId = "user_id";
+        var updateUserCommand = UserUtil.createUpdateUserCommand();
+
+        when(userRepository.findById(userId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(userPersistenceAdapter.updateUser(userId, updateUserCommand))
+                .expectError(UserNotFoundException.class)
+                .verify();
+    }
 }
