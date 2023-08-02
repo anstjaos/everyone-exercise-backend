@@ -45,33 +45,37 @@ class UserPersistenceAdapterTest {
                         && resultUser.autoLogin().equals(registerUserCommand.autoLogin()))
                 .verifyComplete();
     }
-//
-//    @Test
-//    void readUserByUserId_success() {
-//        var userJpaEntity = UserUtil.createUserJpaEntity();
-//        var user = UserUtil.createUser(userJpaEntity);
-//
-//        when(userRepository.findById(userJpaEntity.getUserId())).thenReturn(Optional.of(userJpaEntity));
-//        when(userMapper.mapEntityToDomainEntity(userJpaEntity)).thenReturn(user);
-//
-//        var readUser = userPersistenceAdapter.readUserByUserId(userJpaEntity.getUserId());
-//
-//        assertThat(readUser.userId()).isEqualTo(userJpaEntity.getUserId());
-//        assertThat(readUser.nickname()).isEqualTo(userJpaEntity.getNickname());
-//        assertThat(readUser.password()).isEqualTo(userJpaEntity.getPassword());
-//        assertThat(readUser.phoneNumber()).isEqualTo(userJpaEntity.getPhoneNumber());
-//        assertThat(readUser.autoLogin()).isEqualTo(userJpaEntity.getAutoLogin());
-//    }
-//
-//    @Test
-//    void readUserByUserId_failure_userNotExists() {
-//        var userJpaEntity = UserUtil.createUserJpaEntity();
-//
-//        when(userRepository.findById(userJpaEntity.getUserId())).thenReturn(Optional.empty());
-//
-//        assertThrows(UserNotFoundException.class, () -> userPersistenceAdapter.readUserByUserId(userJpaEntity.getUserId()));
-//    }
-//
+
+    @Test
+    void readUserByUserId_success() {
+        var userJpaEntity = UserUtil.createUserJpaEntity();
+        var user = UserUtil.createUser(userJpaEntity);
+
+        when(userRepository.findById(userJpaEntity.getUserId())).thenReturn(Mono.just(userJpaEntity));
+        when(userMapper.mapEntityToDomainEntity(userJpaEntity)).thenReturn(user);
+
+        var readUserResult = userPersistenceAdapter.readUserByUserId(userJpaEntity.getUserId());
+
+        StepVerifier.create(readUserResult)
+                .expectNextMatches(readUser -> readUser.userId().equals(user.userId())
+                        && readUser.nickname().equals(user.nickname())
+                        && readUser.password().equals(user.password())
+                        && readUser.phoneNumber().equals(user.phoneNumber())
+                        && readUser.autoLogin().equals(user.autoLogin()))
+                .verifyComplete();
+    }
+
+    @Test
+    void readUserByUserId_failure_userNotExists() {
+        var userJpaEntity = UserUtil.createUserJpaEntity();
+
+        when(userRepository.findById(userJpaEntity.getUserId())).thenReturn(Mono.empty());
+
+        StepVerifier.create(userPersistenceAdapter.readUserByUserId(userJpaEntity.getUserId()))
+                .expectError(UserNotFoundException.class)
+                .verify();
+    }
+
     @Test
     void updateUser_success() {
         var updateUserCommand = UserUtil.createUpdateUserCommand();

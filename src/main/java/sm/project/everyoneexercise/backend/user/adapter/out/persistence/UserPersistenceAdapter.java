@@ -29,12 +29,10 @@ class UserPersistenceAdapter implements RegisterUserPort, ReadUserPort, UpdateUs
     }
 
     @Override
-    public User readUserByUserId(String userId) {
-//        var userJpaEntity = userRepository.findById(userId)
-//                .orElseThrow(() -> new UserNotFoundException("User is not exists. user id = " + userId));
-//
-//        return userMapper.mapEntityToDomainEntity(userJpaEntity);
-        return null;
+    public Mono<User> readUserByUserId(String userId) {
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new UserNotFoundException("User is not exists. user id : " + userId))))
+                .map(userMapper::mapEntityToDomainEntity);
     }
 
     @Override

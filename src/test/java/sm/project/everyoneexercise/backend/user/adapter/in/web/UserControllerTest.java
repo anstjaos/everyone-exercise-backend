@@ -86,19 +86,37 @@ class UserControllerTest {
                 .jsonPath("$.header.isSuccessful").isEqualTo(true)
                 .jsonPath("$.header.statusCode").isEqualTo(200);
     }
-//
-//    @Test
-//    void readUser_success() throws Exception {
-//        var user = UserUtil.createUser();
-//
-//        when(readUserUseCase.readUser(user.userId())).thenReturn(user);
-//
-//        mockMvc.perform(get("/users/" + user.userId()))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.header.isSuccessful").value(true))
-//                .andExpect(jsonPath("$.body.userId").value(user.userId()));
-//    }
-//
+
+    @Test
+    void readUser_success() {
+        var user = UserUtil.createUser();
+
+        when(readUserUseCase.readUser(user.userId())).thenReturn(Mono.just(user));
+
+        webTestClient.get()
+                .uri("/users/" + user.userId())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.header.isSuccessful").isEqualTo(true)
+                .jsonPath("$.body.userId").isEqualTo(user.userId());
+    }
+
+    @Test
+    void readUser_failed_userNotFoundException() {
+        var userId = "user_id";
+        when(readUserUseCase.readUser(userId)).thenReturn(Mono.error(new UserNotFoundException("User is not found. User id : " + userId)));
+
+        webTestClient.get()
+                .uri("/users/" + userId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.header.isSuccessful").isEqualTo(false)
+                .jsonPath("$.header.statusCode").isEqualTo(ResponseCode.USER_NOT_FOUND.getStatusCode())
+                .jsonPath("$.header.message").value(Matchers.containsString("User is not found. User id : " + userId));
+    }
+
     @Test
     void updateUser_success() {
         var userId = "user_id";
@@ -127,7 +145,7 @@ class UserControllerTest {
     }
 
     @Test
-    void updateUser_failed_userNotFound() {
+    void updateUser_failed_userNotFoundException() {
         var userId = "user_id";
         var updateUserRequest = UpdateUserRequest.builder()
                 .nickname("change_nickname")

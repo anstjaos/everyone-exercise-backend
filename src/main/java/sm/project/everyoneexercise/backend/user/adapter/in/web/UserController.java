@@ -42,9 +42,9 @@ class UserController {
     }
 
     @GetMapping(path = "/{userId}")
-    Response<User> readUser(@PathVariable String userId) {
-        var user = readUserUseCase.readUser(userId);
-        return Response.success(user);
+    Mono<Response<User>> readUser(@PathVariable String userId) {
+        return readUserUseCase.readUser(userId)
+                .map(Response::success);
     }
 
     @PutMapping(path = "/{userId}")
