@@ -169,14 +169,19 @@ class UserControllerTest {
                 .jsonPath("$.header.statusCode").isEqualTo(ResponseCode.USER_NOT_FOUND.getStatusCode())
                 .jsonPath("$.header.message").value(Matchers.containsString("User is not found. User id : " + userId));
     }
-//
-//    @Test
-//    void deleteUser_success() throws Exception {
-//        var userId = "user_id";
-//
-//        mockMvc.perform(delete("/users/" + userId))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.header.isSuccessful").value(true))
-//                .andExpect(jsonPath("$.body").value(true));
-//    }
+
+    @Test
+    void deleteUser_success() {
+        var userId = "user_id";
+
+        when(deleteUserUseCase.deleteUser(userId)).thenReturn(Mono.empty());
+
+        webTestClient.delete()
+                .uri("/users/" + userId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.header.isSuccessful").isEqualTo(true)
+                .jsonPath("$.body").isEqualTo(true);
+    }
 }

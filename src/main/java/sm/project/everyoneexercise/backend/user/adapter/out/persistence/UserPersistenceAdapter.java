@@ -48,8 +48,7 @@ class UserPersistenceAdapter implements RegisterUserPort, ReadUserPort, UpdateUs
 
     @Override
     @Transactional
-    public void deleteUser(String userId) {
-//        userRepository.deleteById(userId);
-        return;
+    public Mono<Void> deleteUser(String userId) {
+        return userRepository.deleteById(userId);
     }
 }

@@ -1,5 +1,7 @@
 package sm.project.everyoneexercise.backend.user.application.port.out;
 
+import reactor.core.publisher.Mono;
+
 public interface DeleteUserPort {
-    void deleteUser(String userId);
+    Mono<Void> deleteUser(String userId);
 }

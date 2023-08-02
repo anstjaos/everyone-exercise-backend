@@ -56,8 +56,8 @@ class UserController {
     }
 
     @DeleteMapping(path = "/{userId}")
-    Response<Boolean> deleteUser(@PathVariable String userId) {
-        deleteUserUseCase.deleteUser(userId);
-        return Response.success(true);
+    Mono<Response<Boolean>> deleteUser(@PathVariable String userId) {
+        return deleteUserUseCase.deleteUser(userId)
+                .thenReturn(Response.success(true));
     }
 }
