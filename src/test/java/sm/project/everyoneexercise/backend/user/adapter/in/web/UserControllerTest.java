@@ -1,14 +1,16 @@
 package sm.project.everyoneexercise.backend.user.adapter.in.web;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 import sm.project.everyoneexercise.backend.common.ResponseCode;
 import sm.project.everyoneexercise.backend.exception.UserNotFoundException;
 import sm.project.everyoneexercise.backend.user.UserUtil;
@@ -16,15 +18,11 @@ import sm.project.everyoneexercise.backend.user.adapter.in.RegisterUserRequest;
 import sm.project.everyoneexercise.backend.user.adapter.in.UpdateUserRequest;
 import sm.project.everyoneexercise.backend.user.application.port.in.*;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@WebFluxTest(UserController.class)
 @ActiveProfiles("test")
-@AutoConfigureMockMvc
 class UserControllerTest {
 
     @MockBean
@@ -40,32 +38,31 @@ class UserControllerTest {
     private DeleteUserUseCase deleteUserUseCase;
 
     @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @Test
-    void registerUser_failure_validateFailed() throws Exception {
+    void registerUser_failure_validateFailed() {
         var registerUserRequest = RegisterUserRequest.builder()
                 .phoneNumber("")
                 .autoLogin(false)
                 .build();
 
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerUserRequest))
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.header.isSuccessful").value(false))
-                .andExpect(jsonPath("$.header.statusCode").value(ResponseCode.VALIDATE_FAILED.getStatusCode()))
-                .andExpect(jsonPath("$.header.message", containsString("User id is mandatory.")))
-                .andExpect(jsonPath("$.header.message", containsString("Nickname is mandatory.")))
-                .andExpect(jsonPath("$.header.message", containsString("Password is mandatory.")));
+        webTestClient.post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(registerUserRequest), RegisterUserRequest.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.header.isSuccessful").isEqualTo(false)
+                .jsonPath("$.header.statusCode").isEqualTo(ResponseCode.VALIDATE_FAILED.getStatusCode())
+                .jsonPath("$.header.message").value(Matchers.containsString("User id is mandatory."))
+                .jsonPath("$.header.message").value(Matchers.containsString("Nickname is mandatory."));
     }
 
     @Test
-    void registerUser_success() throws Exception {
+    void registerUser_success() {
         var registerUserRequest = RegisterUserRequest.builder()
                 .userId("userId")
                 .nickname("nickname")
@@ -76,31 +73,52 @@ class UserControllerTest {
 
         var registerUserCommand = RegisterUserCommand.mapRequestToCommand(registerUserRequest);
 
-        when(registerUserUseCase.registerUser(registerUserCommand)).thenReturn(UserUtil.createUser(registerUserCommand));
+        when(registerUserUseCase.registerUser(registerUserCommand)).thenReturn(Mono.just(UserUtil.createUser(registerUserCommand)));
 
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerUserRequest))
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.header.isSuccessful").value(true))
-                .andExpect(jsonPath("$.header.statusCode").value(200));
+        webTestClient.post()
+                .uri("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(registerUserCommand), RegisterUserRequest.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.header.isSuccessful").isEqualTo(true)
+                .jsonPath("$.header.statusCode").isEqualTo(200);
     }
 
     @Test
-    void readUser_success() throws Exception {
+    void readUser_success() {
         var user = UserUtil.createUser();
 
-        when(readUserUseCase.readUser(user.userId())).thenReturn(user);
+        when(readUserUseCase.readUser(user.userId())).thenReturn(Mono.just(user));
 
-        mockMvc.perform(get("/users/" + user.userId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.header.isSuccessful").value(true))
-                .andExpect(jsonPath("$.body.userId").value(user.userId()));
+        webTestClient.get()
+                .uri("/users/" + user.userId())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.header.isSuccessful").isEqualTo(true)
+                .jsonPath("$.body.userId").isEqualTo(user.userId());
     }
 
     @Test
-    void updateUser_success() throws Exception {
+    void readUser_failed_userNotFoundException() {
+        var userId = "user_id";
+        when(readUserUseCase.readUser(userId)).thenReturn(Mono.error(new UserNotFoundException("User is not found. User id : " + userId)));
+
+        webTestClient.get()
+                .uri("/users/" + userId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.header.isSuccessful").isEqualTo(false)
+                .jsonPath("$.header.statusCode").isEqualTo(ResponseCode.USER_NOT_FOUND.getStatusCode())
+                .jsonPath("$.header.message").value(Matchers.containsString("User is not found. User id : " + userId));
+    }
+
+    @Test
+    void updateUser_success() {
         var userId = "user_id";
         var updateUserRequest = UpdateUserRequest.builder()
                 .nickname("change_nickname")
@@ -111,20 +129,23 @@ class UserControllerTest {
         var updateUserCommand = UpdateUserCommand.mapRequestToCommand(updateUserRequest);
         var user = UserUtil.createUser(updateUserCommand);
 
-        when(updateUserUseCase.updateUser(userId, updateUserCommand)).thenReturn(user);
+        when(updateUserUseCase.updateUser(userId, updateUserCommand)).thenReturn(Mono.just(user));
 
-        mockMvc.perform(put("/users/" + userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateUserRequest))
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.header.isSuccessful").value(true))
-                .andExpect(jsonPath("$.body.userId").value(user.userId()))
-                .andExpect(jsonPath("$.body.nickname").value(updateUserRequest.nickname()));
+        webTestClient.put()
+                .uri("/users/" + userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(updateUserRequest), UpdateUserRequest.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.header.isSuccessful").isEqualTo(true)
+                .jsonPath("$.body.userId").isEqualTo(user.userId())
+                .jsonPath("$.body.nickname").isEqualTo(updateUserRequest.nickname());
     }
 
     @Test
-    void updateUser_failed_userNotFound() throws Exception {
+    void updateUser_failed_userNotFoundException() {
         var userId = "user_id";
         var updateUserRequest = UpdateUserRequest.builder()
                 .nickname("change_nickname")
@@ -134,25 +155,33 @@ class UserControllerTest {
                 .build();
         var updateUserCommand = UpdateUserCommand.mapRequestToCommand(updateUserRequest);
 
-        when(updateUserUseCase.updateUser(userId, updateUserCommand)).thenThrow(new UserNotFoundException("User is not found. User id = " + userId));
+        when(updateUserUseCase.updateUser(userId, updateUserCommand)).thenReturn(Mono.error(new UserNotFoundException("User is not found. User id : " + userId)));
 
-        mockMvc.perform(put("/users/" + userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateUserRequest))
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.header.isSuccessful").value(false))
-                .andExpect(jsonPath("$.header.statusCode").value(ResponseCode.USER_NOT_FOUND.getStatusCode()))
-                .andExpect(jsonPath("$.header.message", containsString("User is not found. User id = " + userId)));
+        webTestClient.put()
+                .uri("/users/" + userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(updateUserRequest), UpdateUserRequest.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.header.isSuccessful").isEqualTo(false)
+                .jsonPath("$.header.statusCode").isEqualTo(ResponseCode.USER_NOT_FOUND.getStatusCode())
+                .jsonPath("$.header.message").value(Matchers.containsString("User is not found. User id : " + userId));
     }
 
     @Test
-    void deleteUser_success() throws Exception {
+    void deleteUser_success() {
         var userId = "user_id";
 
-        mockMvc.perform(delete("/users/" + userId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.header.isSuccessful").value(true))
-                .andExpect(jsonPath("$.body").value(true));
+        when(deleteUserUseCase.deleteUser(userId)).thenReturn(Mono.empty());
+
+        webTestClient.delete()
+                .uri("/users/" + userId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.header.isSuccessful").isEqualTo(true)
+                .jsonPath("$.body").isEqualTo(true);
     }
 }

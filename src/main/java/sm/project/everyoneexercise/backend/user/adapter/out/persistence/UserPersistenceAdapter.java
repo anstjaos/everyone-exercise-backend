@@ -3,6 +3,7 @@ package sm.project.everyoneexercise.backend.user.adapter.out.persistence;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 import sm.project.everyoneexercise.backend.exception.UserNotFoundException;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
 import sm.project.everyoneexercise.backend.user.application.port.in.UpdateUserCommand;
@@ -20,34 +21,34 @@ class UserPersistenceAdapter implements RegisterUserPort, ReadUserPort, UpdateUs
 
     @Override
     @Transactional
-    public User registerUser(RegisterUserCommand registerUserCommand) {
+    public Mono<User> registerUser(RegisterUserCommand registerUserCommand) {
         var userEntity = userMapper.mapCommandToEntity(registerUserCommand);
-        var userJpaEntity = userRepository.save(userEntity);
 
-        return userMapper.mapEntityToDomainEntity(userJpaEntity);
+        return userRepository.save(userEntity)
+                .map(userMapper::mapEntityToDomainEntity);
     }
 
     @Override
-    public User readUserByUserId(String userId) {
-        var userJpaEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User is not exists. user id = " + userId));
-
-        return userMapper.mapEntityToDomainEntity(userJpaEntity);
-    }
-
-    @Override
-    @Transactional
-    public User updateUser(String userId, UpdateUserCommand updateUserCommand) {
-        var userJpaEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User is not exists. user id = " + userId));
-        userJpaEntity.updateUser(updateUserCommand);
-
-        return userMapper.mapEntityToDomainEntity(userJpaEntity);
+    public Mono<User> readUserByUserId(String userId) {
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new UserNotFoundException("User is not exists. user id : " + userId))))
+                .map(userMapper::mapEntityToDomainEntity);
     }
 
     @Override
     @Transactional
-    public void deleteUser(String userId) {
-        userRepository.deleteById(userId);
+    public Mono<User> updateUser(String userId, UpdateUserCommand updateUserCommand) {
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new UserNotFoundException("User is not found. User id : " + userId))))
+                .flatMap(userJpaEntity -> {
+                    userJpaEntity.updateUser(updateUserCommand);
+                    return Mono.just(userMapper.mapEntityToDomainEntity(userJpaEntity));
+                });
+    }
+
+    @Override
+    @Transactional
+    public Mono<Void> deleteUser(String userId) {
+        return userRepository.deleteById(userId);
     }
 }

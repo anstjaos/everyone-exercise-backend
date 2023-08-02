@@ -1,6 +1,6 @@
 package sm.project.everyoneexercise.backend.user.adapter.out.persistence;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
-interface UserRepository extends JpaRepository<UserJpaEntity, String> {
+interface UserRepository extends ReactiveCrudRepository<UserJpaEntity, String> {
 }

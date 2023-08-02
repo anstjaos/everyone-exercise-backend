@@ -1,17 +1,16 @@
 package sm.project.everyoneexercise.backend.user.adapter.in.web;
 
-import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.support.WebExchangeBindException;
+import reactor.core.publisher.Mono;
 import sm.project.everyoneexercise.backend.common.Response;
-import sm.project.everyoneexercise.backend.exception.RegisterUserValidationException;
 import sm.project.everyoneexercise.backend.user.adapter.in.RegisterUserRequest;
 import sm.project.everyoneexercise.backend.user.adapter.in.UpdateUserRequest;
 import sm.project.everyoneexercise.backend.user.application.port.in.*;
 import sm.project.everyoneexercise.backend.user.domain.User;
 
-import java.util.stream.Collectors;
+import static sm.project.everyoneexercise.backend.common.ResponseCode.VALIDATE_FAILED;
 
 @RestController
 @RequestMapping(path = "users")
@@ -32,33 +31,33 @@ class UserController {
     }
 
     @PostMapping
-    Response<Boolean> registerUser(@Validated @RequestBody RegisterUserRequest registerUserRequest,
-                             BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            var errors = bindingResult.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(","));
-            throw new RegisterUserValidationException(errors);
-        }
-        registerUserUseCase.registerUser(RegisterUserCommand.mapRequestToCommand(registerUserRequest));
-        return Response.success(true);
+    Mono<Response<Boolean>> registerUser(@Valid @RequestBody Mono<RegisterUserRequest> registerUserRequest) {
+        return registerUserRequest
+                .map(RegisterUserCommand::mapRequestToCommand)
+                .flatMap(registerUserUseCase::registerUser)
+                .map(user -> Response.success(true))
+                .onErrorResume(WebExchangeBindException.class, ex ->
+                    Mono.just(Response.fail(VALIDATE_FAILED.getStatusCode(), ex.getMessage()))
+                );
     }
 
     @GetMapping(path = "/{userId}")
-    Response<User> readUser(@PathVariable String userId) {
-        var user = readUserUseCase.readUser(userId);
-        return Response.success(user);
+    Mono<Response<User>> readUser(@PathVariable String userId) {
+        return readUserUseCase.readUser(userId)
+                .map(Response::success);
     }
 
     @PutMapping(path = "/{userId}")
-    Response<User> updateUser(@PathVariable String userId, @RequestBody UpdateUserRequest updateUserRequest) {
-        var user = updateUserUseCase.updateUser(userId, UpdateUserCommand.mapRequestToCommand(updateUserRequest));
-        return Response.success(user);
+    Mono<Response<User>> updateUser(@PathVariable String userId, @RequestBody Mono<UpdateUserRequest> updateUserRequest) {
+        return updateUserRequest
+                .map(UpdateUserCommand::mapRequestToCommand)
+                .flatMap(updateUserCommand -> updateUserUseCase.updateUser(userId, updateUserCommand))
+                .map(Response::success);
     }
 
     @DeleteMapping(path = "/{userId}")
-    Response<Boolean> deleteUser(@PathVariable String userId) {
-        deleteUserUseCase.deleteUser(userId);
-        return Response.success(true);
+    Mono<Response<Boolean>> deleteUser(@PathVariable String userId) {
+        return deleteUserUseCase.deleteUser(userId)
+                .thenReturn(Response.success(true));
     }
 }
