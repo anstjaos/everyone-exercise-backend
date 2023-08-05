@@ -1,17 +1,17 @@
 package sm.project.everyoneexercise.backend.user.adapter.out.persistence;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.mongodb.core.mapping.Document;
 import sm.project.everyoneexercise.backend.user.application.port.in.UpdateUserCommand;
 
 import java.util.Optional;
 
-@Entity
-@Table(name = "User")
+@Document(collation = "user")
 @Getter
-public class UserJpaEntity {
+@Builder
+public class UserEntity {
 
     @Id
     private String userId;
@@ -20,9 +20,9 @@ public class UserJpaEntity {
     private String phoneNumber;
     private Boolean autoLogin;
 
-    public UserJpaEntity() {}
+    public UserEntity() {}
 
-    public UserJpaEntity(String userId, String nickname, String password, String phoneNumber, Boolean autoLogin) {
+    public UserEntity(String userId, String nickname, String password, String phoneNumber, Boolean autoLogin) {
         this.userId = userId;
         this.nickname = nickname;
         this.password = password;

@@ -1,6 +1,6 @@
 package sm.project.everyoneexercise.backend.user.adapter.out.persistence;
 
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
-interface UserRepository extends ReactiveCrudRepository<UserJpaEntity, String> {
+interface UserRepository extends ReactiveMongoRepository<UserEntity, String> {
 }

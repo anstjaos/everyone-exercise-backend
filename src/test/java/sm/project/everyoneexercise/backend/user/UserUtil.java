@@ -1,6 +1,6 @@
 package sm.project.everyoneexercise.backend.user;
 
-import sm.project.everyoneexercise.backend.user.adapter.out.persistence.UserJpaEntity;
+import sm.project.everyoneexercise.backend.user.adapter.out.persistence.UserEntity;
 import sm.project.everyoneexercise.backend.user.application.port.in.RegisterUserCommand;
 import sm.project.everyoneexercise.backend.user.application.port.in.UpdateUserCommand;
 import sm.project.everyoneexercise.backend.user.domain.User;
@@ -26,13 +26,13 @@ public class UserUtil {
                 .build();
     }
 
-    public static User createUser(UserJpaEntity userJpaEntity) {
+    public static User createUser(UserEntity userEntity) {
         return User.builder()
-                .userId(userJpaEntity.getUserId())
-                .nickname(userJpaEntity.getNickname())
-                .password(userJpaEntity.getPassword())
-                .phoneNumber(userJpaEntity.getPhoneNumber())
-                .autoLogin(userJpaEntity.getAutoLogin())
+                .userId(userEntity.getUserId())
+                .nickname(userEntity.getNickname())
+                .password(userEntity.getPassword())
+                .phoneNumber(userEntity.getPhoneNumber())
+                .autoLogin(userEntity.getAutoLogin())
                 .build();
     }
 
@@ -55,16 +55,16 @@ public class UserUtil {
                 .build();
     }
 
-    public static UserJpaEntity createUserJpaEntity(RegisterUserCommand registerUserCommand) {
-        return new UserJpaEntity(registerUserCommand.userId(),
+    public static UserEntity createUserJpaEntity(RegisterUserCommand registerUserCommand) {
+        return new UserEntity(registerUserCommand.userId(),
                 registerUserCommand.nickname(),
                 registerUserCommand.password(),
                 registerUserCommand.phoneNumber(),
                 registerUserCommand.autoLogin());
     }
 
-    public static UserJpaEntity createUserJpaEntity() {
-        return new UserJpaEntity("userId", "nickname", "password", "phoneNumber", false);
+    public static UserEntity createUserJpaEntity() {
+        return new UserEntity("userId", "nickname", "password", "phoneNumber", false);
     }
 
     public static UpdateUserCommand createUpdateUserCommand() {
