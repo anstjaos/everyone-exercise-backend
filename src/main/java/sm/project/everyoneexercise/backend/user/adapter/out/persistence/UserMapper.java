@@ -7,21 +7,21 @@ import sm.project.everyoneexercise.backend.user.domain.User;
 @Component
 class UserMapper {
 
-    UserJpaEntity mapCommandToEntity(RegisterUserCommand registerUserCommand) {
-        return new UserJpaEntity(registerUserCommand.userId(),
+    UserEntity mapCommandToEntity(RegisterUserCommand registerUserCommand) {
+        return new UserEntity(registerUserCommand.userId(),
                 registerUserCommand.nickname(),
                 registerUserCommand.password(),
                 registerUserCommand.phoneNumber(),
                 registerUserCommand.autoLogin());
     }
 
-    User mapEntityToDomainEntity(UserJpaEntity userJpaEntity) {
+    User mapEntityToDomainEntity(UserEntity userEntity) {
         return User.builder()
-                .userId(userJpaEntity.getUserId())
-                .nickname(userJpaEntity.getNickname())
-                .password(userJpaEntity.getPassword())
-                .phoneNumber(userJpaEntity.getPhoneNumber())
-                .autoLogin(userJpaEntity.getAutoLogin())
+                .userId(userEntity.getUserId())
+                .nickname(userEntity.getNickname())
+                .password(userEntity.getPassword())
+                .phoneNumber(userEntity.getPhoneNumber())
+                .autoLogin(userEntity.getAutoLogin())
                 .build();
     }
 }
