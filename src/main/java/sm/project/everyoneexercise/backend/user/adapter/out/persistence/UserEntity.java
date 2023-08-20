@@ -1,16 +1,15 @@
 package sm.project.everyoneexercise.backend.user.adapter.out.persistence;
 
-import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import sm.project.everyoneexercise.backend.user.application.port.in.UpdateUserCommand;
 
 import java.util.Optional;
 
-@Document(collation = "user")
+@Document(collection = "user")
 @Getter
-@Builder
 public class UserEntity {
 
     @Id
@@ -22,6 +21,7 @@ public class UserEntity {
 
     public UserEntity() {}
 
+    @Builder
     public UserEntity(String userId, String nickname, String password, String phoneNumber, Boolean autoLogin) {
         this.userId = userId;
         this.nickname = nickname;
@@ -31,6 +31,7 @@ public class UserEntity {
     }
 
     public void updateUser(UpdateUserCommand updateUserCommand) {
+        // TODO : if 문으로 수정
         Optional.ofNullable(updateUserCommand.nickname())
                 .ifPresent(nickname -> this.nickname = nickname);
 
