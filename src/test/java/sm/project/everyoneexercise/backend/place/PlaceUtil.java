@@ -9,7 +9,6 @@ import java.util.List;
 public class PlaceUtil {
     public static RegisterPlaceCommand createRegisterPlaceCommand() {
         return RegisterPlaceCommand.builder()
-                .placeId("place-id")
                 .name("name")
                 .phoneNumber("phone-number")
                 .url("url")
@@ -18,9 +17,9 @@ public class PlaceUtil {
                 .build();
     }
 
-    public static Place createPlace(RegisterPlaceCommand registerPlaceCommand) {
+    public static Place createPlace(String placeId, RegisterPlaceCommand registerPlaceCommand) {
         return Place.builder()
-                .placeId(registerPlaceCommand.placeId())
+                .placeId(placeId)
                 .name(registerPlaceCommand.name())
                 .phoneNumber(registerPlaceCommand.phoneNumber())
                 .url(registerPlaceCommand.url())
@@ -40,9 +39,9 @@ public class PlaceUtil {
                 .build();
     }
 
-    public static PlaceEntity createPlaceEntity(RegisterPlaceCommand registerPlaceCommand) {
+    public static PlaceEntity createPlaceEntity(String placeId, RegisterPlaceCommand registerPlaceCommand) {
         return PlaceEntity.builder()
-                .placeId(registerPlaceCommand.placeId())
+                .placeId(placeId)
                 .name(registerPlaceCommand.name())
                 .phoneNumber(registerPlaceCommand.phoneNumber())
                 .url(registerPlaceCommand.url())

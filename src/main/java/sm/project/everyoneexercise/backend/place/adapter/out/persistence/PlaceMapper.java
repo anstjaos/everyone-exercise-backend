@@ -7,9 +7,9 @@ import sm.project.everyoneexercise.backend.place.domain.Place;
 @Component
 class PlaceMapper {
 
-    PlaceEntity mapCommandToEntity(RegisterPlaceCommand registerPlaceCommand) {
+    PlaceEntity mapCommandToEntity(String placeId, RegisterPlaceCommand registerPlaceCommand) {
         return PlaceEntity.builder()
-                .placeId(registerPlaceCommand.placeId())
+                .placeId(placeId)
                 .name(registerPlaceCommand.name())
                 .phoneNumber(registerPlaceCommand.phoneNumber())
                 .url(registerPlaceCommand.url())
