@@ -77,7 +77,7 @@ class UserControllerTest {
                 .uri("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .body(Mono.just(registerUserCommand), RegisterUserRequest.class)
+                .body(Mono.just(registerUserRequest), RegisterUserRequest.class)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
