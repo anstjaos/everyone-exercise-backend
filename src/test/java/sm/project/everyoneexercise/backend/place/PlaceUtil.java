@@ -1,7 +1,10 @@
 package sm.project.everyoneexercise.backend.place;
 
+import sm.project.everyoneexercise.backend.place.adapter.out.persistence.PlaceEntity;
 import sm.project.everyoneexercise.backend.place.application.port.in.RegisterPlaceCommand;
 import sm.project.everyoneexercise.backend.place.domain.Place;
+
+import java.util.List;
 
 public class PlaceUtil {
     public static RegisterPlaceCommand createRegisterPlaceCommand() {
@@ -21,6 +24,17 @@ public class PlaceUtil {
                 .phoneNumber(registerPlaceCommand.phoneNumber())
                 .url(registerPlaceCommand.url())
                 .geoLocation(registerPlaceCommand.geoLocation())
+                .build();
+    }
+
+    public static PlaceEntity createPlaceEntity() {
+        return PlaceEntity.builder()
+                .placeId("place-id")
+                .name("name")
+                .phoneNumber("phone-number")
+                .url("url")
+                .exerciseId(List.of("exercise-id"))
+                .geoLocation("geo-location")
                 .build();
     }
 }
