@@ -13,6 +13,7 @@ public class PlaceUtil {
                 .name("name")
                 .phoneNumber("phone-number")
                 .url("url")
+                .exerciseId(List.of("exercise-id"))
                 .geoLocation("geo-location")
                 .build();
     }
@@ -23,6 +24,7 @@ public class PlaceUtil {
                 .name(registerPlaceCommand.name())
                 .phoneNumber(registerPlaceCommand.phoneNumber())
                 .url(registerPlaceCommand.url())
+                .exerciseId(registerPlaceCommand.exerciseId())
                 .geoLocation(registerPlaceCommand.geoLocation())
                 .build();
     }
@@ -35,6 +37,17 @@ public class PlaceUtil {
                 .url("url")
                 .exerciseId(List.of("exercise-id"))
                 .geoLocation("geo-location")
+                .build();
+    }
+
+    public static PlaceEntity createPlaceEntity(RegisterPlaceCommand registerPlaceCommand) {
+        return PlaceEntity.builder()
+                .placeId(registerPlaceCommand.placeId())
+                .name(registerPlaceCommand.name())
+                .phoneNumber(registerPlaceCommand.phoneNumber())
+                .url(registerPlaceCommand.url())
+                .exerciseId(registerPlaceCommand.exerciseId())
+                .geoLocation(registerPlaceCommand.geoLocation())
                 .build();
     }
 }
