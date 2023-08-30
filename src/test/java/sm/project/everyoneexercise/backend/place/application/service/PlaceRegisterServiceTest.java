@@ -10,7 +10,6 @@ import reactor.test.StepVerifier;
 import sm.project.everyoneexercise.backend.place.PlaceUtil;
 import sm.project.everyoneexercise.backend.place.application.port.out.RegisterPlacePort;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,10 +23,9 @@ class PlaceRegisterServiceTest {
     @Test
     void registerUser_success() {
         var registerPlaceCommand = PlaceUtil.createRegisterPlaceCommand();
-        var placeId = "place-id";
-        var place = PlaceUtil.createPlace(placeId, registerPlaceCommand);
+        var place = PlaceUtil.createPlace(registerPlaceCommand);
 
-        when(registerPlacePort.registerPlace(any(), any())).thenReturn(Mono.just(place));
+        when(registerPlacePort.registerPlace(registerPlaceCommand)).thenReturn(Mono.just(place));
 
         var registerPlace = placeRegisterService.registerPlace(registerPlaceCommand);
 

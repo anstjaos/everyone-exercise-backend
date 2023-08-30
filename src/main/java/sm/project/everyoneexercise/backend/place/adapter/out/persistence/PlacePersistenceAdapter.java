@@ -16,8 +16,8 @@ class PlacePersistenceAdapter implements RegisterPlacePort {
 
     @Override
     @Transactional
-    public Mono<Place> registerPlace(String placeId, RegisterPlaceCommand registerPlaceCommand) {
-        var placeEntity = placeMapper.mapCommandToEntity(placeId, registerPlaceCommand);
+    public Mono<Place> registerPlace(RegisterPlaceCommand registerPlaceCommand) {
+        var placeEntity = placeMapper.mapCommandToEntity(registerPlaceCommand);
         return placeRepository.save(placeEntity)
                 .map(placeMapper::mapEntityToDomainEntity);
     }

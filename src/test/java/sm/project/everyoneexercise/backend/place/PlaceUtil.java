@@ -17,9 +17,8 @@ public class PlaceUtil {
                 .build();
     }
 
-    public static Place createPlace(String placeId, RegisterPlaceCommand registerPlaceCommand) {
+    public static Place createPlace(RegisterPlaceCommand registerPlaceCommand) {
         return Place.builder()
-                .placeId(placeId)
                 .name(registerPlaceCommand.name())
                 .phoneNumber(registerPlaceCommand.phoneNumber())
                 .url(registerPlaceCommand.url())
@@ -39,9 +38,8 @@ public class PlaceUtil {
                 .build();
     }
 
-    public static PlaceEntity createPlaceEntity(String placeId, RegisterPlaceCommand registerPlaceCommand) {
+    public static PlaceEntity createPlaceEntity(RegisterPlaceCommand registerPlaceCommand) {
         return PlaceEntity.builder()
-                .placeId(placeId)
                 .name(registerPlaceCommand.name())
                 .phoneNumber(registerPlaceCommand.phoneNumber())
                 .url(registerPlaceCommand.url())

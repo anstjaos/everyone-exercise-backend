@@ -55,9 +55,8 @@ class PlaceControllerTest {
                 .build();
 
         var registerPlaceCommand = RegisterPlaceCommand.mapRequestToCommand(registerPlaceRequest);
-        var placeId = "place-id";
 
-        when(registerPlaceUseCase.registerPlace(registerPlaceCommand)).thenReturn(Mono.just(PlaceUtil.createPlace(placeId, registerPlaceCommand)));
+        when(registerPlaceUseCase.registerPlace(registerPlaceCommand)).thenReturn(Mono.just(PlaceUtil.createPlace(registerPlaceCommand)));
 
         webTestClient.post()
                 .uri("/places")

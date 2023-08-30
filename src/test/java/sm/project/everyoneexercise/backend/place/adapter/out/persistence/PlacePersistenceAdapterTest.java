@@ -28,18 +28,17 @@ class PlacePersistenceAdapterTest {
     void registerPlace_success() {
         var registerPlaceCommand = PlaceUtil.createRegisterPlaceCommand();
         var placeId = "place-id";
-        var placeEntity = PlaceUtil.createPlaceEntity(placeId, registerPlaceCommand);
-        var place = PlaceUtil.createPlace(placeId, registerPlaceCommand);
+        var placeEntity = PlaceUtil.createPlaceEntity(registerPlaceCommand);
+        var place = PlaceUtil.createPlace(registerPlaceCommand);
 
-        when(placeMapper.mapCommandToEntity(placeId, registerPlaceCommand)).thenReturn(placeEntity);
+        when(placeMapper.mapCommandToEntity(registerPlaceCommand)).thenReturn(placeEntity);
         when(placeRepository.save(placeEntity)).thenReturn(Mono.just(placeEntity));
         when(placeMapper.mapEntityToDomainEntity(placeEntity)).thenReturn(place);
 
-        var registerPlace = placePersistenceAdapter.registerPlace(placeId, registerPlaceCommand);
+        var registerPlace = placePersistenceAdapter.registerPlace(registerPlaceCommand);
 
         StepVerifier.create(registerPlace)
-                .expectNextMatches(resultPlace -> resultPlace.placeId().equals(placeId)
-                        && resultPlace.name().equals(registerPlaceCommand.name())
+                .expectNextMatches(resultPlace -> resultPlace.name().equals(registerPlaceCommand.name())
                         && resultPlace.phoneNumber().equals(registerPlaceCommand.phoneNumber())
                         && resultPlace.url().equals(registerPlaceCommand.url())
                         && resultPlace.exerciseId().equals(registerPlaceCommand.exerciseId())

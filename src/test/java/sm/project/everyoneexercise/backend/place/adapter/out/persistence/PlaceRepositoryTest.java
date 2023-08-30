@@ -21,8 +21,7 @@ class PlaceRepositoryTest {
         var savePlace = placeRepository.save(placeEntity);
 
         StepVerifier.create(savePlace)
-                .expectNextMatches(place -> place.getPlaceId().equals(placeEntity.getPlaceId())
-                        && place.getName().equals(placeEntity.getName())
+                .expectNextMatches(place -> place.getName().equals(placeEntity.getName())
                         && place.getPhoneNumber().equals(placeEntity.getPhoneNumber())
                         && place.getUrl().equals(placeEntity.getUrl())
                         && place.getExerciseId().equals(placeEntity.getExerciseId())
@@ -34,11 +33,10 @@ class PlaceRepositoryTest {
     void findByIdPlace_success() {
         var placeEntity = PlaceUtil.createPlaceEntity();
         var saveAndFindPlace = placeRepository.save(placeEntity)
-                .then(placeRepository.findById(placeEntity.getPlaceId()));
+                .flatMap(place -> placeRepository.findById(place.getPlaceId()));
 
         StepVerifier.create(saveAndFindPlace)
-                .expectNextMatches(place -> place.getPlaceId().equals(placeEntity.getPlaceId())
-                        && place.getName().equals(placeEntity.getName())
+                .expectNextMatches(place -> place.getName().equals(placeEntity.getName())
                         && place.getPhoneNumber().equals(placeEntity.getPhoneNumber())
                         && place.getUrl().equals(placeEntity.getUrl())
                         && place.getExerciseId().equals(placeEntity.getExerciseId())
@@ -49,17 +47,12 @@ class PlaceRepositoryTest {
     @Test
     void deleteByIdPlace_success() {
         var placeEntity = PlaceUtil.createPlaceEntity();
-        var saveAndFindPlace = placeRepository.save(placeEntity)
-                .then(placeRepository.findById(placeEntity.getPlaceId()));
+        var saveAndFindPlaceAndDelete = placeRepository.save(placeEntity)
+                .flatMap(place -> placeRepository.findById(place.getPlaceId()))
+                .flatMap(findPlace -> placeRepository.deleteById(findPlace.getPlaceId()).thenReturn(findPlace))
+                .flatMap(findPlace -> placeRepository.findById(findPlace.getPlaceId()));
 
-        StepVerifier.create(saveAndFindPlace)
-                .expectNextMatches(place -> place.getPlaceId().equals(placeEntity.getPlaceId()))
-                .verifyComplete();
-
-        var deleteAndFindPlace = placeRepository.deleteById(placeEntity.getPlaceId())
-                .then(placeRepository.findById(placeEntity.getPlaceId()));
-
-        StepVerifier.create(deleteAndFindPlace)
+        StepVerifier.create(saveAndFindPlaceAndDelete)
                 .expectNextCount(0)
                 .verifyComplete();
     }

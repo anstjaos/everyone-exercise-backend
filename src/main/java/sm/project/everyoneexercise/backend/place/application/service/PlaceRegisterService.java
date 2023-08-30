@@ -8,8 +8,6 @@ import sm.project.everyoneexercise.backend.place.application.port.in.RegisterPla
 import sm.project.everyoneexercise.backend.place.application.port.out.RegisterPlacePort;
 import sm.project.everyoneexercise.backend.place.domain.Place;
 
-import java.util.UUID;
-
 @AllArgsConstructor
 @Service
 public class PlaceRegisterService implements RegisterPlaceUseCase {
@@ -17,7 +15,6 @@ public class PlaceRegisterService implements RegisterPlaceUseCase {
 
     @Override
     public Mono<Place> registerPlace(RegisterPlaceCommand registerPlaceCommand) {
-        var placeId = UUID.randomUUID().toString();
-        return registerPlacePort.registerPlace(placeId, registerPlaceCommand);
+        return registerPlacePort.registerPlace(registerPlaceCommand);
     }
 }

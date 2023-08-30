@@ -5,5 +5,5 @@ import sm.project.everyoneexercise.backend.place.application.port.in.RegisterPla
 import sm.project.everyoneexercise.backend.place.domain.Place;
 
 public interface RegisterPlacePort {
-    Mono<Place> registerPlace(String placeId, RegisterPlaceCommand registerPlaceCommand);
+    Mono<Place> registerPlace(RegisterPlaceCommand registerPlaceCommand);
 }
