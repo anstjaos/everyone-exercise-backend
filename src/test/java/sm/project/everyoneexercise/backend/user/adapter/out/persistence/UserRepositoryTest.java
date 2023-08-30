@@ -1,13 +1,10 @@
 package sm.project.everyoneexercise.backend.user.adapter.out.persistence;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -16,21 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataMongoTest()
 @ExtendWith(SpringExtension.class)
-@DirtiesContext
 public class UserRepositoryTest {
-
-    @Autowired
-    private ReactiveMongoTemplate reactiveMongoTemplate;
 
     @Autowired
     private UserRepository userRepository;
 
     private final String USER_ID = "user-id";
-
-    @BeforeEach
-    void setUp() {
-        userRepository.deleteAll().subscribe();
-    }
 
     @Test
     void saveUser_success() {
